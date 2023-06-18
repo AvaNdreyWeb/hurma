@@ -5,6 +5,7 @@ import (
 	"hurma-service/hurma-service/config"
 	"hurma-service/hurma-service/database"
 	"hurma-service/hurma-service/handlers"
+	"hurma-service/hurma-service/mw"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -29,7 +30,7 @@ func main() {
 
 	e.POST("/create", func(c echo.Context) error {
 		return handlers.CreateLinkHandler(c, client)
-	})
+	}, mw.JwtMiddleware)
 
 	e.Logger.Fatal(e.Start(addr))
 }

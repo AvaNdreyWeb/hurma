@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,9 +17,9 @@ type LinkManager struct {
 
 var ErrLinkConflict = errors.New("this link already exists")
 
-func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) error {
+func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) (primitive.ObjectID, error) {
 	if lm.FullExists(l.FullUrl, cl) {
-		return ErrLinkConflict
+		return primitive.ObjectID{}, ErrLinkConflict
 	}
 
 	var shortUrl string
@@ -41,11 +42,11 @@ func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) error {
 	}
 	result, err := coll.InsertOne(context.TODO(), doc)
 	if err != nil {
-		return err
+		return primitive.ObjectID{}, err
 	}
 	log.Printf("Inserted link with id: %v\n", result.InsertedID)
-
-	return nil
+	linkId := result.InsertedID.(primitive.ObjectID)
+	return linkId, nil
 }
 
 func (lm *LinkManager) Edit(u *models.AuthUserDTO, cl *mongo.Client) error {
