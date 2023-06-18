@@ -1,8 +1,8 @@
 package models
 
 type ExpireDate struct {
-	Created_at string
-	Expires_at string
+	CreatedAt string
+	ExpiresAt string
 }
 
 type ClickStat struct {
@@ -11,10 +11,22 @@ type ClickStat struct {
 }
 
 type Link struct {
-	Id        string
-	Title     string
-	Short_url string
-	Full_url  string
-	Expires   ExpireDate
-	Clicks    ClickStat
+	Id       string
+	Title    string
+	ShortUrl string
+	FullUrl  string
+	Expires  ExpireDate
+	Clicks   ClickStat
+}
+
+type CreateLinkDTO struct {
+	Title     string `json:"title"`
+	FullUrl   string `json:"fullUrl"`
+	CreatedAt string `json:"createdAt"`
+	ExpiresAt string `json:"expiresAt"`
+}
+
+type EditLinkDTO struct {
+	Title     string `json:"title"`
+	ExpiresAt string `json:"expiresAt"`
 }

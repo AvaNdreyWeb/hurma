@@ -5,7 +5,7 @@ type User struct {
 	Username     string
 	Password     string
 	Email        string
-	Chat_id      string
+	ChatId       string
 	Links        []string
 	Subscription bool
 }

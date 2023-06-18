@@ -16,10 +16,11 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 		return c.String(http.StatusBadRequest, "bad request")
 	}
 
-	um := new(crud.UserManager)
-	if err := um.Validate(u, cl); err != nil {
-		return c.String(http.StatusUnauthorized, "invalid username or password")
-	}
+	// um := new(crud.UserManager)
+
+	// if err := um.Validate(u, cl); err != nil {
+	// 	return c.String(http.StatusUnauthorized, "invalid username or password")
+	// }
 
 	return c.JSON(http.StatusOK, u)
 }
@@ -32,8 +33,8 @@ func SignUpHandler(c echo.Context, cl *mongo.Client) error {
 
 	um := new(crud.UserManager)
 	if err := um.Create(u, cl); err != nil {
-		if err == crud.UsernameConflict {
-			return c.String(http.StatusConflict, crud.UsernameConflict.Error())
+		if err == crud.ErrUsernameConflict {
+			return c.String(http.StatusConflict, crud.ErrUsernameConflict.Error())
 		}
 		log.Fatal(err)
 	}
