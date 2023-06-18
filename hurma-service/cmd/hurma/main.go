@@ -32,5 +32,9 @@ func main() {
 		return handlers.CreateLinkHandler(c, client)
 	}, mw.JwtMiddleware)
 
+	e.GET("/links", func(c echo.Context) error {
+		return handlers.UserLinksHandler(c, client)
+	}, mw.JwtMiddleware)
+
 	e.Logger.Fatal(e.Start(addr))
 }

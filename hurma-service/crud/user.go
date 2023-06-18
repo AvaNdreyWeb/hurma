@@ -17,6 +17,7 @@ type UserManager struct {
 
 var ErrEmailConflict = errors.New("user with this email already exists")
 var ErrUserNotFound = errors.New("user not found")
+var ErrPageNotFound = errors.New("page not found")
 var ErrValidationFailed = errors.New("invalid email or password")
 
 func (um *UserManager) Create(u *models.AuthUserDTO, cl *mongo.Client) error {
@@ -74,11 +75,11 @@ func (um *UserManager) Get(email string, cl *mongo.Client) (*models.User, error)
 }
 
 func (um *UserManager) AddLink(email string, linkId primitive.ObjectID, cl *mongo.Client) error {
-	coll := cl.Database("hurma").Collection("users")
 	_, err := um.Get(email, cl)
 	if err != nil {
 		return err
 	}
+	coll := cl.Database("hurma").Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
 	update := bson.M{"$push": bson.M{"links": linkId}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
@@ -88,4 +89,27 @@ func (um *UserManager) AddLink(email string, linkId primitive.ObjectID, cl *mong
 	log.Printf("Append user links with linkId: %v\n", linkId)
 
 	return nil
+}
+
+func (um *UserManager) GetLinks(email string, page int, cl *mongo.Client) ([]models.TableLinkDTO, error) {
+	user, err := um.Get(email, cl)
+	if err != nil {
+		return []models.TableLinkDTO{}, err
+	}
+	count := len(user.Links)
+	start := (page - 1) * 10
+	if start >= count {
+		return []models.TableLinkDTO{}, ErrPageNotFound
+	}
+	var end int
+	if start+10 > count {
+		end = count
+	} else {
+		end = start + 10
+	}
+
+	linksId := user.Links[start:end]
+	lm := new(LinkManager)
+	links := lm.GetLinksByIdList(linksId, cl)
+	return links, nil
 }

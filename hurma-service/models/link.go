@@ -1,8 +1,8 @@
 package models
 
 type ExpireDate struct {
-	CreatedAt string
-	ExpiresAt string
+	CreatedAt string `bson:"createdAt"`
+	ExpiresAt string `bson:"expiresAt"`
 }
 
 type ClickStat struct {
@@ -13,8 +13,8 @@ type ClickStat struct {
 type Link struct {
 	Id       string
 	Title    string
-	ShortUrl string
-	FullUrl  string
+	ShortUrl string `bson:"shortUrl"`
+	FullUrl  string `bson:"fullUrl"`
 	Expires  ExpireDate
 	Clicks   ClickStat
 }
@@ -29,4 +29,12 @@ type CreateLinkDTO struct {
 type EditLinkDTO struct {
 	Title     string `json:"title"`
 	ExpiresAt string `json:"expiresAt"`
+}
+
+type TableLinkDTO struct {
+	Id          string `json:"id"`
+	Title       string `json:"title"`
+	ShortUrl    string `json:"shortUrl"`
+	ExpiresAt   string `json:"expiresAt"`
+	ClicksTotal uint64 `json:"clicksTotal"`
 }
