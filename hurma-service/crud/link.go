@@ -53,7 +53,16 @@ func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) (primit
 	return linkId, nil
 }
 
-func (lm *LinkManager) Edit(u *models.AuthUserDTO, cl *mongo.Client) error {
+func (lm *LinkManager) Edit(l *models.EditLinkDTO, id primitive.ObjectID, cl *mongo.Client) error {
+	link := lm.GetByID(id, cl)
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.D{{Key: "_id", Value: id}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "title", Value: l.Title}, {Key: "expires", Value: bson.D{{Key: "expiresAt", Value: l.ExpiresAt}, {Key: "createdAt", Value: link.ExpiresAt}}}}}}
+	_, err := coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("link updated: %v\n", id)
 
 	return nil
 }

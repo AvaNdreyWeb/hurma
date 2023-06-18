@@ -113,3 +113,37 @@ func (um *UserManager) GetLinks(email string, page int, cl *mongo.Client) ([]mod
 	links := lm.GetLinksByIdList(linksId, cl)
 	return links, nil
 }
+
+func (um *UserManager) Subscribe(email string, cl *mongo.Client) error {
+	_, err := um.Get(email, cl)
+	if err != nil {
+		return err
+	}
+	coll := cl.Database("hurma").Collection("users")
+	filter := bson.D{{Key: "email", Value: email}}
+	update := bson.M{"$set": bson.M{"subscription": true}}
+	_, err = coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("user subscribed to statistics: %s\n", email)
+
+	return nil
+}
+
+func (um *UserManager) Unsubscribe(email string, cl *mongo.Client) error {
+	_, err := um.Get(email, cl)
+	if err != nil {
+		return err
+	}
+	coll := cl.Database("hurma").Collection("users")
+	filter := bson.D{{Key: "email", Value: email}}
+	update := bson.M{"$set": bson.M{"subscription": false}}
+	_, err = coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("user unsubscribed from statistics: %s\n", email)
+
+	return nil
+}

@@ -32,6 +32,38 @@ func main() {
 		return handlers.CreateLinkHandler(c, client)
 	}, mw.JwtMiddleware)
 
+	e.PATCH("/edit/:linkId", func(c echo.Context) error {
+		return handlers.EditLinkHandler(c, client)
+	}, mw.JwtMiddleware)
+
+	// e.DELETE("/delete/:linkId", func(c echo.Context) error {
+	// 	return handlers.CreateLinkHandler(c, client)
+	// }, mw.JwtMiddleware)
+
+	e.POST("/subscribe", func(c echo.Context) error {
+		return handlers.SubscribeHandler(c, client)
+	}, mw.JwtMiddleware)
+
+	e.POST("/unsubscribe", func(c echo.Context) error {
+		return handlers.UnsubscribeHandler(c, client)
+	}, mw.JwtMiddleware)
+
+	// e.GET("/:genPart", func(c echo.Context) error {
+	// 	return handlers.CreateLinkHandler(c, client)
+	// }, mw.JwtMiddleware)
+
+	// e.GET("/statistics", func(c echo.Context) error {
+	// 	return handlers.CreateLinkHandler(c, client)
+	// }, mw.JwtMiddleware)
+
+	// e.GET("/statistics/:linkId", func(c echo.Context) error {
+	// 	return handlers.CreateLinkHandler(c, client)
+	// }, mw.JwtMiddleware)
+
+	// e.GET("/profile", func(c echo.Context) error {
+	// 	return handlers.CreateLinkHandler(c, client)
+	// }, mw.JwtMiddleware)
+
 	e.GET("/links", func(c echo.Context) error {
 		return handlers.UserLinksHandler(c, client)
 	}, mw.JwtMiddleware)
