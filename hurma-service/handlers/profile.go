@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"hurma-service/hurma-service/crud"
+	"hurma-service/hurma-service/models"
 	"log"
 	"net/http"
 
@@ -31,4 +32,22 @@ func UnsubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	}
 
 	return c.String(http.StatusOK, "Successfully subscribed")
+}
+
+func ProfileHandler(c echo.Context, cl *mongo.Client) error {
+	authUserEmail := c.Get("user").(string)
+
+	um := new(crud.UserManager)
+	user, err := um.Get(authUserEmail, cl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	u := models.ProfileUserDTO{
+		Email:        user.Email,
+		ChatId:       user.ChatId,
+		Subscription: user.Subscription,
+	}
+
+	return c.JSON(http.StatusOK, u)
 }

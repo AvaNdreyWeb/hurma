@@ -53,17 +53,47 @@ func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) (primit
 	return linkId, nil
 }
 
-func (lm *LinkManager) Edit(l *models.EditLinkDTO, id primitive.ObjectID, cl *mongo.Client) error {
-	link := lm.GetByID(id, cl)
+func (lm *LinkManager) EditTitle(title string, id primitive.ObjectID, cl *mongo.Client) error {
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.D{{Key: "_id", Value: id}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "title", Value: l.Title}, {Key: "expires", Value: bson.D{{Key: "expiresAt", Value: l.ExpiresAt}, {Key: "createdAt", Value: link.ExpiresAt}}}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "title", Value: title}}}}
 	_, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("link updated: %v\n", id)
+	log.Printf("link title updated: %v\n", id)
 
+	return nil
+}
+
+func (lm *LinkManager) EditExpires(expiresAt string, id primitive.ObjectID, cl *mongo.Client) error {
+	link := lm.GetByID(id, cl)
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.D{{Key: "_id", Value: id}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "expires", Value: bson.D{{Key: "expiresAt", Value: expiresAt}, {Key: "createdAt", Value: link.Expires.CreatedAt}}}}}}
+	_, err := coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("link expire date is updated: %v\n", id)
+
+	return nil
+}
+
+func (lm *LinkManager) Delete(email string, id primitive.ObjectID, cl *mongo.Client) error {
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.D{{Key: "_id", Value: id}}
+
+	_, err := coll.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	log.Printf("link deleted: %v\n", id)
+	um := new(UserManager)
+	err = um.DeleteFromLinks(email, id, cl)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -101,29 +131,60 @@ func (lm *LinkManager) ShortExists(shortUrl string, cl *mongo.Client) bool {
 func (lm *LinkManager) GetLinksByIdList(linksId []primitive.ObjectID, cl *mongo.Client) []models.TableLinkDTO {
 	links := make([]models.TableLinkDTO, 0)
 	for _, id := range linksId {
-		links = append(links, lm.GetByID(id, cl))
+		link := lm.GetByID(id, cl)
+		stringId := fmt.Sprintf("%q", id.Hex())
+		length := len(stringId)
+		l := models.TableLinkDTO{
+			Id:          stringId[1 : length-1],
+			Title:       link.Title,
+			ShortUrl:    link.ShortUrl,
+			ExpiresAt:   link.Expires.ExpiresAt,
+			ClicksTotal: link.Clicks.Total,
+		}
+		links = append(links, l)
 	}
 	return links
 }
 
-func (lm *LinkManager) GetByID(linkId primitive.ObjectID, cl *mongo.Client) models.TableLinkDTO {
+func (lm *LinkManager) GetByID(linkId primitive.ObjectID, cl *mongo.Client) *models.Link {
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.D{{Key: "_id", Value: linkId}}
 	link := new(models.Link)
 	err := coll.FindOne(context.TODO(), filter).Decode(link)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return models.TableLinkDTO{}
+			return &models.Link{}
 		}
 		log.Fatal(err)
 	}
-	stringId := fmt.Sprintf("%q", linkId.Hex())
-	l := len(stringId)
-	return models.TableLinkDTO{
-		Id:          stringId[1 : l-1],
-		Title:       link.Title,
-		ShortUrl:    link.ShortUrl,
-		ExpiresAt:   link.Expires.ExpiresAt,
-		ClicksTotal: link.Clicks.Total,
+
+	return link
+}
+
+func (lm *LinkManager) GetFullUrl(shortUrl string, cl *mongo.Client) (*models.Link, error) {
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.D{{Key: "shortUrl", Value: shortUrl}}
+	link := new(models.Link)
+	err := coll.FindOne(context.TODO(), filter).Decode(link)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return &models.Link{}, err
+		}
+		log.Fatal(err)
 	}
+
+	return link, nil
+}
+
+func (lm *LinkManager) IncTotal(id primitive.ObjectID, cl *mongo.Client) error {
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.D{{Key: "_id", Value: id}}
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "clicks", Value: bson.D{{Key: "total", Value: 1}}}}}}
+	_, err := coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("link inc updated: %v\n", id)
+
+	return nil
 }

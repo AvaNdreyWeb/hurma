@@ -5,7 +5,6 @@ import (
 )
 
 type User struct {
-	Id           string
 	Password     string
 	Email        string
 	ChatId       string `bson:"chatId"`
@@ -21,4 +20,10 @@ type AuthUserDTO struct {
 type UserLinksDTO struct {
 	Total int            `json:"total"`
 	Data  []TableLinkDTO `json:"data"`
+}
+
+type ProfileUserDTO struct {
+	Email        string `json:"email"`
+	ChatId       string `json:"chatId"`
+	Subscription bool   `json:"subscription"`
 }

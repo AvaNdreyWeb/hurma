@@ -147,3 +147,27 @@ func (um *UserManager) Unsubscribe(email string, cl *mongo.Client) error {
 
 	return nil
 }
+
+func (um *UserManager) DeleteFromLinks(email string, id primitive.ObjectID, cl *mongo.Client) error {
+	user, err := um.Get(email, cl)
+	if err != nil {
+		return err
+	}
+	linksId := make([]primitive.ObjectID, 0)
+	for _, linkId := range user.Links {
+		if linkId != id {
+			linksId = append(linksId, linkId)
+		}
+	}
+
+	coll := cl.Database("hurma").Collection("users")
+	filter := bson.D{{Key: "email", Value: email}}
+	update := bson.M{"$set": bson.M{"links": linksId}}
+	_, err = coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("link deleted from user: %v\n", id)
+
+	return nil
+}
