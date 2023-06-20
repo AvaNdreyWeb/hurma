@@ -1,7 +1,5 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type ExpireDate struct {
 	CreatedAt string `bson:"createdAt"`
 	ExpiresAt string `bson:"expiresAt"`
@@ -13,7 +11,7 @@ type ClickStat struct {
 }
 
 type Link struct {
-	Id       primitive.ObjectID
+	Id       string `bson:"_id"` //primitive.ObjectID
 	Title    string
 	ShortUrl string `bson:"shortUrl"`
 	FullUrl  string `bson:"fullUrl"`
@@ -39,4 +37,9 @@ type TableLinkDTO struct {
 	ShortUrl    string `json:"shortUrl"`
 	ExpiresAt   string `json:"expiresAt"`
 	ClicksTotal uint64 `json:"clicksTotal"`
+}
+
+type DailyDTO struct {
+	Date   string
+	Clicks uint64
 }

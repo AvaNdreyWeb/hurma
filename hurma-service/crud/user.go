@@ -171,3 +171,16 @@ func (um *UserManager) DeleteFromLinks(email string, id primitive.ObjectID, cl *
 
 	return nil
 }
+
+func (um *UserManager) StatisticsAccess(email string, id primitive.ObjectID, cl *mongo.Client) bool {
+	user, err := um.Get(email, cl)
+	if err != nil {
+		return false
+	}
+	for _, linkId := range user.Links {
+		if linkId != id {
+			return true
+		}
+	}
+	return false
+}

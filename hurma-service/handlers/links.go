@@ -102,8 +102,11 @@ func RedirectHandler(c echo.Context, cl *mongo.Client) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	err = lm.IncTotal(link.Id, cl)
+	id, err := primitive.ObjectIDFromHex(link.Id)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = lm.IncTotal(id, cl)
 	if err != nil {
 		if err == crud.ErrLinkConflict {
 			return c.String(http.StatusConflict, err.Error())

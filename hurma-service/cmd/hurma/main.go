@@ -52,13 +52,13 @@ func main() {
 		return handlers.RedirectHandler(c, client)
 	})
 
-	// e.GET("/statistics", func(c echo.Context) error {
-	// 	return handlers.CreateLinkHandler(c, client)
-	// }, mw.JwtMiddleware)
+	e.GET("/statistics", func(c echo.Context) error {
+		return handlers.AllLinksStatisticsHandler(c, client)
+	}, mw.JwtMiddleware)
 
-	// e.GET("/statistics/:linkId", func(c echo.Context) error {
-	// 	return handlers.CreateLinkHandler(c, client)
-	// }, mw.JwtMiddleware)
+	e.GET("/statistics/:genPart", func(c echo.Context) error {
+		return handlers.OneLinkStatisticsHandler(c, client)
+	}, mw.JwtMiddleware)
 
 	e.GET("/profile", func(c echo.Context) error {
 		return handlers.ProfileHandler(c, client)

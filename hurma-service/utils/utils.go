@@ -2,6 +2,7 @@ package utils
 
 import (
 	"hurma-service/hurma-service/config"
+	"hurma-service/hurma-service/models"
 	"math/rand"
 	"strings"
 	"time"
@@ -51,4 +52,26 @@ func randomChar() byte {
 
 func randomInRange(start, end byte) byte {
 	return start + byte(rand.Intn(int(end-start+1)))
+}
+
+func MergeStatistics(rawData [][]models.DailyDTO) ([]models.DailyDTO, error) {
+	mx := 0
+	for _, data := range rawData {
+		if len(data) > mx {
+			mx = len(data)
+		}
+	}
+	merged := make([]models.DailyDTO, mx)
+	for _, data := range rawData {
+		shift := mx - len(data)
+		for j := mx - 1; j >= 0; j-- {
+			if len(data) == mx {
+				merged[j].Date = data[j].Date
+			}
+			if j < len(data) {
+				merged[j+shift].Clicks += data[j].Clicks
+			}
+		}
+	}
+	return merged, nil
 }

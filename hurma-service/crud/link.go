@@ -7,6 +7,7 @@ import (
 	"hurma-service/hurma-service/models"
 	"hurma-service/hurma-service/utils"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -161,6 +162,23 @@ func (lm *LinkManager) GetByID(linkId primitive.ObjectID, cl *mongo.Client) *mod
 	return link
 }
 
+func (lm *LinkManager) GetByShortUrl(shortUrl string, cl *mongo.Client) (*models.Link, error) {
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.D{{Key: "shortUrl", Value: shortUrl}}
+	link := new(models.Link)
+	log.Println("short url", shortUrl)
+	err := coll.FindOne(context.TODO(), filter).Decode(link)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return &models.Link{}, err
+		}
+		log.Fatal(err)
+	}
+	log.Println("SUCCESS short url")
+
+	return link, nil
+}
+
 func (lm *LinkManager) GetFullUrl(shortUrl string, cl *mongo.Client) (*models.Link, error) {
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.D{{Key: "shortUrl", Value: shortUrl}}
@@ -187,4 +205,33 @@ func (lm *LinkManager) IncTotal(id primitive.ObjectID, cl *mongo.Client) error {
 	log.Printf("link inc updated: %v\n", id)
 
 	return nil
+}
+
+func (lm *LinkManager) GetLinkStatistics(link *models.Link, days int, cl *mongo.Client) ([]models.DailyDTO, error) {
+	startString := link.Expires.CreatedAt
+	layout := "2006-01-02T15:04:05Z"
+
+	startDate, err := time.Parse(layout, startString)
+	if err != nil {
+		return []models.DailyDTO{}, err
+	}
+
+	daily := link.Clicks.Daily
+	diff := 0
+	if days < len(daily) {
+		diff = len(daily) - days
+		startDate = startDate.AddDate(0, 0, diff)
+		daily = daily[diff:]
+	} else if days > len(daily) {
+		days = len(daily)
+	}
+
+	DataList := make([]models.DailyDTO, days)
+
+	for i := 0; i < days; i++ {
+		curDate := startDate.AddDate(0, 0, i)
+		DataList[i] = models.DailyDTO{Clicks: daily[i], Date: curDate.Format(layout)}
+	}
+
+	return DataList, nil
 }
