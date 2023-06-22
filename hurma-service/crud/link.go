@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type LinkManager struct {
@@ -234,4 +235,42 @@ func (lm *LinkManager) GetLinkStatistics(link *models.Link, days int, cl *mongo.
 	}
 
 	return DataList, nil
+}
+
+func UpdateAll(cl *mongo.Client) {
+	coll := cl.Database("hurma").Collection("links")
+	filter := bson.M{}
+	findOptions := options.Find()
+	cursor, err := coll.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(context.TODO())
+
+	for cursor.Next(context.TODO()) {
+		var link models.Link
+		if err := cursor.Decode(&link); err != nil {
+			log.Fatal(err)
+		}
+
+		var yesterdayClicks uint64
+		n := len(link.Clicks.Daily)
+		if n == 0 {
+			yesterdayClicks = link.Clicks.Total
+		} else {
+			yesterdayClicks = link.Clicks.Total - link.Clicks.Daily[n-1]
+		}
+
+		update := bson.M{"$push": bson.M{"Clicks.Daily": yesterdayClicks}}
+
+		_, err = coll.UpdateOne(context.TODO(), bson.M{"_id": link.Id}, update)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Fatal(err)
+	}
+
 }

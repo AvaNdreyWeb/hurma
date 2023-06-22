@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"hurma-service/hurma-service/config"
+	"hurma-service/hurma-service/crud"
 	"hurma-service/hurma-service/database"
 	"hurma-service/hurma-service/handlers"
 	"hurma-service/hurma-service/mw"
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -17,6 +19,12 @@ func main() {
 
 	cfg := config.GetServer()
 	addr := strings.Join([]string{cfg.Host, cfg.Port}, "")
+
+	cron := cron.New()
+	cron.AddFunc("0 0 0 * * *", func() {
+		crud.UpdateAll(client)
+	})
+	cron.Start()
 
 	e := echo.New()
 
