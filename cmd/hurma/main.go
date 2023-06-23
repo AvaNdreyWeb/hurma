@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"hurma-service/hurma-service/config"
-	"hurma-service/hurma-service/crud"
-	"hurma-service/hurma-service/database"
-	"hurma-service/hurma-service/handlers"
-	"hurma-service/hurma-service/mw"
+	"hurma/internal/config"
+	"hurma/internal/crud"
+	"hurma/internal/handlers"
+	"hurma/internal/mw"
+	"hurma/internal/storage"
+	
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +15,7 @@ import (
 )
 
 func main() {
-	client := database.ConnectDb()
+	client := storage.ConnectDb()
 	defer client.Disconnect(context.Background())
 
 	cfg := config.GetServer()

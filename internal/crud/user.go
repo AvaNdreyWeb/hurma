@@ -3,8 +3,9 @@ package crud
 import (
 	"context"
 	"errors"
-	"hurma-service/hurma-service/models"
-	"hurma-service/hurma-service/utils"
+	"hurma/internal/models"
+	"hurma/internal/utils"
+
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"

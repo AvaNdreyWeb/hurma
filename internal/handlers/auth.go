@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"hurma-service/hurma-service/crud"
-	"hurma-service/hurma-service/models"
+	"hurma/internal/crud"
+	"hurma/internal/models"
 	"log"
 	"net/http"
 

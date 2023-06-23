@@ -1,8 +1,8 @@
-package database
+package storage
 
 import (
 	"context"
-	"hurma-service/hurma-service/config"
+	"hurma/internal/config"
 	"log"
 	"strings"
 

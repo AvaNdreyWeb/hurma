@@ -1,0 +1,21 @@
+version: "3"
+services:
+  app:
+    image: hurma
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+  mongo:
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ../scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - dbdata:/data/db
+    command: ["mongod", "--bind_ip_all", "--auth"]
+volumes:
+  dbdata:

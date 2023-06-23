@@ -21,9 +21,9 @@ type ServiceConfig struct {
 func GetMongoDb() *MongoConfig {
 	return &MongoConfig{
 		Protocol: "mongodb://",
-		User:     "",
-		Password: "",
-		Host:     "localhost",
+		User:     "admin",
+		Password: ":password",
+		Host:     "@mongo",
 		Port:     ":27017",
 		Options:  "",
 	}
@@ -31,8 +31,8 @@ func GetMongoDb() *MongoConfig {
 
 func GetServer() *ServerConfig {
 	return &ServerConfig{
-		Host: "localhost",
-		Port: ":1323",
+		Host: "0.0.0.0",
+		Port: ":8080",
 	}
 }
 

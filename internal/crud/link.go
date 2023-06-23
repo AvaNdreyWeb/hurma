@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hurma-service/hurma-service/models"
-	"hurma-service/hurma-service/utils"
+	"hurma/internal/models"
+	"hurma/internal/utils"
 	"log"
 	"time"
 
@@ -149,6 +149,16 @@ func (lm *LinkManager) GetLinksByIdList(linksId []primitive.ObjectID, cl *mongo.
 }
 
 func (lm *LinkManager) GetByID(linkId primitive.ObjectID, cl *mongo.Client) *models.Link {
+	// cachedData, err := redisClient.Get(linkId).Result()
+	// if err == nil {
+	// 	var link models.Link
+	// 	err := json.Unmarshal([]byte(cachedData), &link)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return &link, nil
+	// }
+	// if not in cache
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.D{{Key: "_id", Value: linkId}}
 	link := new(models.Link)
