@@ -7,10 +7,11 @@ import (
 	"hurma/internal/handlers"
 	"hurma/internal/mw"
 	"hurma/internal/storage"
-	
+
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/robfig/cron/v3"
 )
 
@@ -28,6 +29,7 @@ func main() {
 	cron.Start()
 
 	e := echo.New()
+	e.Use(middleware.CORS())
 
 	e.POST("/sign-up", func(c echo.Context) error {
 		return handlers.SignUpHandler(c, client)
