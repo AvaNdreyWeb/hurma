@@ -9,5 +9,5 @@ docker build -t hurma -f build/Dockerfile .
 
 ```
 cd deployments/
-docker compose-up
+docker-compose up
 ```
