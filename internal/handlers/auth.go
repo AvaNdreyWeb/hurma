@@ -11,6 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type tokenDTO struct {
+	AccessToken string `json:"accessToken"`
+}
+
 func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
@@ -32,7 +36,9 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate JWT token")
 	}
 
-	return c.String(http.StatusOK, tokenString)
+	access := tokenDTO{AccessToken: tokenString}
+
+	return c.JSON(http.StatusOK, access)
 }
 
 func SignUpHandler(c echo.Context, cl *mongo.Client) error {
