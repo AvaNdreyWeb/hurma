@@ -7,6 +7,8 @@ import (
 	"hurma/internal/handlers"
 	"hurma/internal/mw"
 	"hurma/internal/storage"
+	"net/http"
+	"regexp"
 
 	"strings"
 
@@ -14,6 +16,10 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/robfig/cron/v3"
 )
+
+func allowOrigin(origin string) (bool, error) {
+	return regexp.MatchString(`^*$`, origin)
+}
 
 func main() {
 	client := storage.ConnectDb()
@@ -29,7 +35,10 @@ func main() {
 	cron.Start()
 
 	e := echo.New()
-	e.Use(middleware.CORS())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOriginFunc: allowOrigin,
+		AllowMethods:    []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
 
 	e.POST("/sign-up", func(c echo.Context) error {
 		return handlers.SignUpHandler(c, client)
