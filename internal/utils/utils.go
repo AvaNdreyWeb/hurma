@@ -54,7 +54,7 @@ func randomInRange(start, end byte) byte {
 	return start + byte(rand.Intn(int(end-start+1)))
 }
 
-func MergeStatistics(rawData [][]models.DailyDTO) ([]models.DailyDTO, error) {
+func MergeStatistics(rawData [][]models.DailyDTO) []models.DailyDTO {
 	mx := 0
 	for _, data := range rawData {
 		if len(data) > mx {
@@ -73,5 +73,5 @@ func MergeStatistics(rawData [][]models.DailyDTO) ([]models.DailyDTO, error) {
 			}
 		}
 	}
-	return merged, nil
+	return merged
 }

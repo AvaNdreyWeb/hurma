@@ -4,7 +4,6 @@ import (
 	"hurma/internal/config"
 	"hurma/internal/crud"
 	"hurma/internal/models"
-	"log"
 	"net/http"
 	"strings"
 
@@ -18,101 +17,147 @@ func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 
 	l := new(models.CreateLinkDTO)
 	if err := c.Bind(l); err != nil {
-		return c.String(http.StatusBadRequest, "bad request")
+		r = ResponseJSON{
+			Code:    http.StatusBadRequest,
+			Message: "Bad request",
+		}
+		return c.JSON(http.StatusBadRequest, r)
 	}
 
-	lm := new(crud.LinkManager)
 	linkId, err := lm.Create(l, cl)
 	if err != nil {
 		if err == crud.ErrLinkConflict {
-			return c.String(http.StatusConflict, err.Error())
+			r = ResponseJSON{
+				Code:    http.StatusConflict,
+				Message: "Link already exists",
+			}
+			return c.JSON(http.StatusConflict, r)
 		}
-		log.Fatal(err)
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	um := new(crud.UserManager)
 	if err = um.AddLink(authUserEmail, linkId, cl); err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	return c.JSON(http.StatusOK, l)
+	r = ResponseJSON{
+		Code:    http.StatusOK,
+		Message: "OK",
+	}
+	return c.JSON(http.StatusOK, r)
 }
 
 func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
-		log.Fatal(err)
-	}
-	l := new(models.EditLinkDTO)
-	if err := c.Bind(l); err != nil {
-		return c.String(http.StatusBadRequest, "bad request")
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	lm := new(crud.LinkManager)
+	l := new(models.EditLinkDTO)
+	if err := c.Bind(l); err != nil {
+		r = ResponseJSON{
+			Code:    http.StatusBadRequest,
+			Message: "Bad request",
+		}
+		return c.JSON(http.StatusBadRequest, r)
+	}
+
 	if l.Title != "" {
-		err = lm.EditTitle(l.Title, linkId, cl)
-		if err != nil {
-			if err == crud.ErrLinkConflict {
-				return c.String(http.StatusConflict, err.Error())
+		if err = lm.EditTitle(l.Title, linkId, cl); err != nil {
+			r = ResponseJSON{
+				Code:    http.StatusInternalServerError,
+				Message: "Internal Server Error",
 			}
-			log.Fatal(err)
+			return c.JSON(http.StatusInternalServerError, r)
 		}
 	}
 	if l.ExpiresAt != "" {
-		err = lm.EditExpires(l.ExpiresAt, linkId, cl)
-		if err != nil {
-			if err == crud.ErrLinkConflict {
-				return c.String(http.StatusConflict, err.Error())
+		if err = lm.EditExpires(l.ExpiresAt, linkId, cl); err != nil {
+			r = ResponseJSON{
+				Code:    http.StatusInternalServerError,
+				Message: "Internal Server Error",
 			}
-			log.Fatal(err)
+			return c.JSON(http.StatusInternalServerError, r)
 		}
 	}
 
-	return c.JSON(http.StatusOK, l)
+	r = ResponseJSON{
+		Code:    http.StatusOK,
+		Message: "OK",
+	}
+	return c.JSON(http.StatusOK, r)
 }
 
 func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	lm := new(crud.LinkManager)
-	err = lm.Delete(authUserEmail, linkId, cl)
-	if err != nil {
-		if err == crud.ErrLinkConflict {
-			return c.String(http.StatusConflict, err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
 		}
-		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	return c.String(http.StatusOK, "Link successfully deleted")
+	if err = lm.Delete(authUserEmail, linkId, cl); err != nil {
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+
+	r = ResponseJSON{
+		Code:    http.StatusOK,
+		Message: "OK",
+	}
+	return c.JSON(http.StatusOK, r)
 }
 
 func RedirectHandler(c echo.Context, cl *mongo.Client) error {
-
 	genPart := c.Param("genPart")
 	cfg := config.GetService()
 	addrPart := cfg.Host
 	shortUrl := strings.Join([]string{addrPart, genPart}, "/")
 
-	lm := new(crud.LinkManager)
 	link, err := lm.GetFullUrl(shortUrl, cl)
 	if err != nil {
-		log.Fatal(err)
-	}
-	id, err := primitive.ObjectIDFromHex(link.Id)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = lm.IncTotal(id, cl)
-	if err != nil {
-		if err == crud.ErrLinkConflict {
-			return c.String(http.StatusConflict, err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
 		}
-		log.Fatal(err)
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	return c.Redirect(http.StatusOK, link.FullUrl)
+	id, err := primitive.ObjectIDFromHex(link.Id)
+	if err != nil {
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+
+	err = lm.IncTotal(id, cl)
+	if err != nil {
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+
+	return c.Redirect(http.StatusPermanentRedirect, link.FullUrl)
 }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"hurma/internal/crud"
 	"hurma/internal/models"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -19,27 +18,41 @@ func UserLinksHandler(c echo.Context, cl *mongo.Client) error {
 		page = 1
 	}
 
-	um := new(crud.UserManager)
 	links, err := um.GetLinks(authUserEmail, page, cl)
 	if err != nil {
 		if err == crud.ErrUserNotFound {
-			return c.String(http.StatusNotFound, err.Error())
+			r = ResponseJSON{
+				Code:    http.StatusNotFound,
+				Message: "User not found",
+			}
+			return c.JSON(http.StatusNotFound, r)
 		}
 		if err == crud.ErrPageNotFound {
-			return c.String(http.StatusNotFound, err.Error())
+			r = ResponseJSON{
+				Code:    http.StatusNotFound,
+				Message: "Page not found",
+			}
+			return c.JSON(http.StatusNotFound, r)
 		}
-		log.Fatal(err)
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
 	user, err := um.Get(authUserEmail, cl)
 	if err != nil {
-		log.Fatal(err)
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
 	data := models.UserLinksDTO{
 		Total: len(user.Links),
 		Data:  links,
 	}
-
 	return c.JSON(http.StatusOK, data)
 }

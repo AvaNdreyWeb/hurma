@@ -61,7 +61,7 @@ func (lm *LinkManager) EditTitle(title string, id primitive.ObjectID, cl *mongo.
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "title", Value: title}}}}
 	_, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("link title updated: %v\n", id)
 
@@ -75,7 +75,7 @@ func (lm *LinkManager) EditExpires(expiresAt string, id primitive.ObjectID, cl *
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "expires", Value: bson.D{{Key: "expiresAt", Value: expiresAt}, {Key: "createdAt", Value: link.Expires.CreatedAt}}}}}}
 	_, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("link expire date is updated: %v\n", id)
 
@@ -183,7 +183,7 @@ func (lm *LinkManager) GetByShortUrl(shortUrl string, cl *mongo.Client) (*models
 		if err == mongo.ErrNoDocuments {
 			return &models.Link{}, err
 		}
-		log.Fatal(err)
+		return &models.Link{}, err
 	}
 	log.Println("SUCCESS short url")
 
@@ -211,7 +211,7 @@ func (lm *LinkManager) IncTotal(id primitive.ObjectID, cl *mongo.Client) error {
 	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "clicks", Value: bson.D{{Key: "total", Value: 1}}}}}}
 	_, err := coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("link inc updated: %v\n", id)
 

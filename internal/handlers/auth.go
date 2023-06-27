@@ -3,7 +3,6 @@ package handlers
 import (
 	"hurma/internal/crud"
 	"hurma/internal/models"
-	"log"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -11,49 +10,68 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type tokenDTO struct {
-	AccessToken string `json:"accessToken"`
-}
-
 func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
-		return c.String(http.StatusBadRequest, "bad request")
+		r = ResponseJSON{
+			Code:    http.StatusBadRequest,
+			Message: "Bad request",
+		}
+		return c.JSON(http.StatusBadRequest, r)
 	}
 
-	um := new(crud.UserManager)
-
 	if err := um.Validate(u, cl); err != nil {
-		return c.String(http.StatusUnauthorized, err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusUnauthorized,
+			Message: "Invalid email or password",
+		}
+		return c.JSON(http.StatusUnauthorized, r)
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["user"] = u.Email
-
 	tokenString, err := token.SignedString([]byte("secret"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate JWT token")
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
 	access := tokenDTO{AccessToken: tokenString}
-
 	return c.JSON(http.StatusOK, access)
 }
 
 func SignUpHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
-		return c.String(http.StatusBadRequest, "bad request")
+		r = ResponseJSON{
+			Code:    http.StatusBadRequest,
+			Message: "Bad request",
+		}
+		return c.JSON(http.StatusBadRequest, r)
 	}
 
-	um := new(crud.UserManager)
 	if err := um.Create(u, cl); err != nil {
 		if err == crud.ErrEmailConflict {
-			return c.String(http.StatusConflict, err.Error())
+			r = ResponseJSON{
+				Code:    http.StatusConflict,
+				Message: "User with this email already exists",
+			}
+			return c.JSON(http.StatusConflict, r)
 		}
-		log.Fatal(err)
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	return c.JSON(http.StatusOK, u)
+	r = ResponseJSON{
+		Code:    http.StatusOK,
+		Message: "OK",
+	}
+	return c.JSON(http.StatusOK, r)
 }

@@ -125,7 +125,7 @@ func (um *UserManager) Subscribe(email string, cl *mongo.Client) error {
 	update := bson.M{"$set": bson.M{"subscription": true}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("user subscribed to statistics: %s\n", email)
 
@@ -142,7 +142,7 @@ func (um *UserManager) Unsubscribe(email string, cl *mongo.Client) error {
 	update := bson.M{"$set": bson.M{"subscription": false}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("user unsubscribed from statistics: %s\n", email)
 
