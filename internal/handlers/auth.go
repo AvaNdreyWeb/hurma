@@ -48,6 +48,16 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, access)
 }
 
+// SignUpHandler godoc
+// @Summary Create new user
+// @Description Create new user with email and password
+// @Tags Users
+// @Param authUserDTO body models.AuthUserDTO true "Create new user data"
+// @Accept json
+// @Produce json
+// @Success 200 {object} ResponseJSON
+// @Failure 400 {object} ResponseJSON
+// @Router /sign-up [post]
 func SignUpHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {

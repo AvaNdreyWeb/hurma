@@ -1,0 +1,59 @@
+basePath: /
+definitions:
+  handlers.ResponseJSON:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  models.AuthUserDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Echo Swagger Example API
+  version: "1.0"
+paths:
+  /sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Create new user with email and password
+      parameters:
+      - description: Create new user data
+        in: body
+        name: authUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Create new user
+      tags:
+      - Users
+schemes:
+- http
+swagger: "2.0"
