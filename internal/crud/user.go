@@ -6,8 +6,6 @@ import (
 	"hurma/internal/models"
 	"hurma/internal/utils"
 
-	"log"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,12 +36,10 @@ func (um *UserManager) Create(u *models.AuthUserDTO, cl *mongo.Client) error {
 		Password: hash,
 		Links:    []primitive.ObjectID{},
 	}
-	result, err := coll.InsertOne(context.TODO(), doc)
+	_, err = coll.InsertOne(context.TODO(), doc)
 	if err != nil {
 		return err
 	}
-	log.Printf("Inserted user with id: %v\n", result.InsertedID)
-
 	return nil
 }
 
@@ -87,8 +83,6 @@ func (um *UserManager) AddLink(email string, linkId primitive.ObjectID, cl *mong
 	if err != nil {
 		return err
 	}
-	log.Printf("Append user links with linkId: %v\n", linkId)
-
 	return nil
 }
 
@@ -127,8 +121,6 @@ func (um *UserManager) Subscribe(email string, cl *mongo.Client) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("user subscribed to statistics: %s\n", email)
-
 	return nil
 }
 
@@ -144,8 +136,6 @@ func (um *UserManager) Unsubscribe(email string, cl *mongo.Client) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("user unsubscribed from statistics: %s\n", email)
-
 	return nil
 }
 
@@ -168,8 +158,6 @@ func (um *UserManager) DeleteFromLinks(email string, id primitive.ObjectID, cl *
 	if err != nil {
 		return err
 	}
-	log.Printf("link deleted from user: %v\n", id)
-
 	return nil
 }
 

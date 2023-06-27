@@ -50,7 +50,6 @@ func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) (primit
 	if err != nil {
 		return primitive.ObjectID{}, err
 	}
-	log.Printf("Inserted link with id: %v\n", result.InsertedID)
 	linkId := result.InsertedID.(primitive.ObjectID)
 	return linkId, nil
 }
@@ -63,8 +62,6 @@ func (lm *LinkManager) EditTitle(title string, id primitive.ObjectID, cl *mongo.
 	if err != nil {
 		return err
 	}
-	log.Printf("link title updated: %v\n", id)
-
 	return nil
 }
 
@@ -77,8 +74,6 @@ func (lm *LinkManager) EditExpires(expiresAt string, id primitive.ObjectID, cl *
 	if err != nil {
 		return err
 	}
-	log.Printf("link expire date is updated: %v\n", id)
-
 	return nil
 }
 
@@ -90,7 +85,6 @@ func (lm *LinkManager) Delete(email string, id primitive.ObjectID, cl *mongo.Cli
 	if err != nil {
 		return err
 	}
-	log.Printf("link deleted: %v\n", id)
 	um := new(UserManager)
 	err = um.DeleteFromLinks(email, id, cl)
 	if err != nil {

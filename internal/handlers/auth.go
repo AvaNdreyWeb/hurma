@@ -3,6 +3,7 @@ package handlers
 import (
 	"hurma/internal/crud"
 	"hurma/internal/models"
+	"log"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -13,6 +14,7 @@ import (
 func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusBadRequest,
 			Message: "Bad request",
@@ -21,6 +23,7 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	}
 
 	if err := um.Validate(u, cl); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusUnauthorized,
 			Message: "Invalid email or password",
@@ -33,6 +36,7 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	claims["user"] = u.Email
 	tokenString, err := token.SignedString([]byte("secret"))
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -47,6 +51,7 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 func SignUpHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusBadRequest,
 			Message: "Bad request",
@@ -55,6 +60,7 @@ func SignUpHandler(c echo.Context, cl *mongo.Client) error {
 	}
 
 	if err := um.Create(u, cl); err != nil {
+		log.Println(err.Error())
 		if err == crud.ErrEmailConflict {
 			r = ResponseJSON{
 				Code:    http.StatusConflict,

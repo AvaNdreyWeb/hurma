@@ -4,6 +4,7 @@ import (
 	"hurma/internal/config"
 	"hurma/internal/crud"
 	"hurma/internal/models"
+	"log"
 	"net/http"
 	"strings"
 
@@ -14,9 +15,9 @@ import (
 
 func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
-
 	l := new(models.CreateLinkDTO)
 	if err := c.Bind(l); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusBadRequest,
 			Message: "Bad request",
@@ -26,6 +27,7 @@ func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 
 	linkId, err := lm.Create(l, cl)
 	if err != nil {
+		log.Println(err.Error())
 		if err == crud.ErrLinkConflict {
 			r = ResponseJSON{
 				Code:    http.StatusConflict,
@@ -41,6 +43,7 @@ func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 	}
 
 	if err = um.AddLink(authUserEmail, linkId, cl); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -58,6 +61,7 @@ func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -67,6 +71,7 @@ func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 
 	l := new(models.EditLinkDTO)
 	if err := c.Bind(l); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusBadRequest,
 			Message: "Bad request",
@@ -76,6 +81,7 @@ func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 
 	if l.Title != "" {
 		if err = lm.EditTitle(l.Title, linkId, cl); err != nil {
+			log.Println(err.Error())
 			r = ResponseJSON{
 				Code:    http.StatusInternalServerError,
 				Message: "Internal Server Error",
@@ -85,6 +91,7 @@ func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 	}
 	if l.ExpiresAt != "" {
 		if err = lm.EditExpires(l.ExpiresAt, linkId, cl); err != nil {
+			log.Println(err.Error())
 			r = ResponseJSON{
 				Code:    http.StatusInternalServerError,
 				Message: "Internal Server Error",
@@ -104,6 +111,7 @@ func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -112,6 +120,7 @@ func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
 	}
 
 	if err = lm.Delete(authUserEmail, linkId, cl); err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -134,6 +143,7 @@ func RedirectHandler(c echo.Context, cl *mongo.Client) error {
 
 	link, err := lm.GetFullUrl(shortUrl, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -143,6 +153,7 @@ func RedirectHandler(c echo.Context, cl *mongo.Client) error {
 
 	id, err := primitive.ObjectIDFromHex(link.Id)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -152,6 +163,7 @@ func RedirectHandler(c echo.Context, cl *mongo.Client) error {
 
 	err = lm.IncTotal(id, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",

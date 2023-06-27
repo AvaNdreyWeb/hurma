@@ -3,6 +3,7 @@ package handlers
 import (
 	"hurma/internal/crud"
 	"hurma/internal/models"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,6 +21,7 @@ func UserLinksHandler(c echo.Context, cl *mongo.Client) error {
 
 	links, err := um.GetLinks(authUserEmail, page, cl)
 	if err != nil {
+		log.Println(err.Error())
 		if err == crud.ErrUserNotFound {
 			r = ResponseJSON{
 				Code:    http.StatusNotFound,
@@ -43,6 +45,7 @@ func UserLinksHandler(c echo.Context, cl *mongo.Client) error {
 
 	user, err := um.Get(authUserEmail, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",

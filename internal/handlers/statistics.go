@@ -4,6 +4,7 @@ import (
 	"hurma/internal/config"
 	"hurma/internal/models"
 	"hurma/internal/utils"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 	period := c.QueryParam("period")
 	days, err := strconv.Atoi(period)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -31,6 +33,7 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 	shortUrl := strings.Join([]string{addrPart, genPart}, "/")
 	link, err := lm.GetByShortUrl(shortUrl, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -40,6 +43,7 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 
 	id, err := primitive.ObjectIDFromHex(link.Id)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -56,6 +60,7 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 
 	data, err := lm.GetLinkStatistics(link, days, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -71,6 +76,7 @@ func AllLinksStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 	period := c.QueryParam("period")
 	days, err := strconv.Atoi(period)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -80,6 +86,7 @@ func AllLinksStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 
 	user, err := um.Get(authUserEmail, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -92,6 +99,7 @@ func AllLinksStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 		link := lm.GetByID(id, cl)
 		data, err := lm.GetLinkStatistics(link, days, cl)
 		if err != nil {
+			log.Println(err.Error())
 			r = ResponseJSON{
 				Code:    http.StatusInternalServerError,
 				Message: "Internal Server Error",

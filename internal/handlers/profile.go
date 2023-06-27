@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"hurma/internal/models"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,9 +11,9 @@ import (
 
 func SubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
-
 	err := um.Subscribe(authUserEmail, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -29,9 +30,9 @@ func SubscribeHandler(c echo.Context, cl *mongo.Client) error {
 
 func UnsubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
-
 	err := um.Unsubscribe(authUserEmail, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
@@ -50,6 +51,7 @@ func ProfileHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	user, err := um.Get(authUserEmail, cl)
 	if err != nil {
+		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
