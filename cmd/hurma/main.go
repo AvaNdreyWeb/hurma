@@ -12,7 +12,8 @@ import (
 
 	"strings"
 
-	_ "github.com/AvaNdreyWeb/hurma/docs"
+	_ "hurma/docs"
+
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/labstack/echo/v4"
