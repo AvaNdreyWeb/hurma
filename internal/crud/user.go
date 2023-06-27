@@ -69,7 +69,7 @@ func (um *UserManager) Get(email string, cl *mongo.Client) (*models.User, error)
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrUserNotFound
 		}
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return user, nil
@@ -85,7 +85,7 @@ func (um *UserManager) AddLink(email string, linkId primitive.ObjectID, cl *mong
 	update := bson.M{"$push": bson.M{"links": linkId}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("Append user links with linkId: %v\n", linkId)
 
@@ -95,12 +95,12 @@ func (um *UserManager) AddLink(email string, linkId primitive.ObjectID, cl *mong
 func (um *UserManager) GetLinks(email string, page int, cl *mongo.Client) ([]models.TableLinkDTO, error) {
 	user, err := um.Get(email, cl)
 	if err != nil {
-		return []models.TableLinkDTO{}, err
+		return nil, err
 	}
 	count := len(user.Links)
 	start := (page - 1) * 10
 	if start >= count {
-		return []models.TableLinkDTO{}, ErrPageNotFound
+		return nil, ErrPageNotFound
 	}
 	var end int
 	if start+10 > count {
@@ -166,7 +166,7 @@ func (um *UserManager) DeleteFromLinks(email string, id primitive.ObjectID, cl *
 	update := bson.M{"$set": bson.M{"links": linksId}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	log.Printf("link deleted from user: %v\n", id)
 

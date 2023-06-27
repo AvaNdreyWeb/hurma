@@ -105,14 +105,7 @@ func (lm *LinkManager) FullExists(fullUrl string, cl *mongo.Client) bool {
 	link := new(models.Link)
 	filter := bson.D{{Key: "fullUrl", Value: fullUrl}}
 	err := coll.FindOne(context.TODO(), filter).Decode(link)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return false
-		}
-		log.Fatal(err)
-	}
-
-	return true
+	return err == nil
 }
 
 func (lm *LinkManager) ShortExists(shortUrl string, cl *mongo.Client) bool {
@@ -120,14 +113,7 @@ func (lm *LinkManager) ShortExists(shortUrl string, cl *mongo.Client) bool {
 	link := new(models.Link)
 	filter := bson.D{{Key: "shortUrl", Value: shortUrl}}
 	err := coll.FindOne(context.TODO(), filter).Decode(link)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return false
-		}
-		log.Fatal(err)
-	}
-
-	return true
+	return err == nil
 }
 
 func (lm *LinkManager) GetLinksByIdList(linksId []primitive.ObjectID, cl *mongo.Client) []models.TableLinkDTO {
@@ -149,27 +135,16 @@ func (lm *LinkManager) GetLinksByIdList(linksId []primitive.ObjectID, cl *mongo.
 }
 
 func (lm *LinkManager) GetByID(linkId primitive.ObjectID, cl *mongo.Client) *models.Link {
-	// cachedData, err := redisClient.Get(linkId).Result()
-	// if err == nil {
-	// 	var link models.Link
-	// 	err := json.Unmarshal([]byte(cachedData), &link)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return &link, nil
-	// }
-	// if not in cache
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.D{{Key: "_id", Value: linkId}}
 	link := new(models.Link)
 	err := coll.FindOne(context.TODO(), filter).Decode(link)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &models.Link{}
+			return nil
 		}
-		log.Fatal(err)
+		return nil
 	}
-
 	return link
 }
 
@@ -177,16 +152,13 @@ func (lm *LinkManager) GetByShortUrl(shortUrl string, cl *mongo.Client) (*models
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.D{{Key: "shortUrl", Value: shortUrl}}
 	link := new(models.Link)
-	log.Println("short url", shortUrl)
 	err := coll.FindOne(context.TODO(), filter).Decode(link)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &models.Link{}, err
+			return nil, err
 		}
-		return &models.Link{}, err
+		return nil, err
 	}
-	log.Println("SUCCESS short url")
-
 	return link, nil
 }
 
@@ -196,12 +168,8 @@ func (lm *LinkManager) GetFullUrl(shortUrl string, cl *mongo.Client) (*models.Li
 	link := new(models.Link)
 	err := coll.FindOne(context.TODO(), filter).Decode(link)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return &models.Link{}, err
-		}
-		log.Fatal(err)
+		return nil, err
 	}
-
 	return link, nil
 }
 
@@ -213,20 +181,16 @@ func (lm *LinkManager) IncTotal(id primitive.ObjectID, cl *mongo.Client) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("link inc updated: %v\n", id)
-
 	return nil
 }
 
 func (lm *LinkManager) GetLinkStatistics(link *models.Link, days int, cl *mongo.Client) ([]models.DailyDTO, error) {
 	startString := link.Expires.CreatedAt
 	layout := "2006-01-02T15:04:05Z"
-
 	startDate, err := time.Parse(layout, startString)
 	if err != nil {
-		return []models.DailyDTO{}, err
+		return nil, err
 	}
-
 	daily := link.Clicks.Daily
 	diff := 0
 	if days < len(daily) {
@@ -236,14 +200,11 @@ func (lm *LinkManager) GetLinkStatistics(link *models.Link, days int, cl *mongo.
 	} else if days > len(daily) {
 		days = len(daily)
 	}
-
 	DataList := make([]models.DailyDTO, days)
-
 	for i := 0; i < days; i++ {
 		curDate := startDate.AddDate(0, 0, i)
 		DataList[i] = models.DailyDTO{Clicks: daily[i], Date: curDate.Format(layout)}
 	}
-
 	return DataList, nil
 }
 
@@ -253,16 +214,15 @@ func UpdateAll(cl *mongo.Client) {
 	findOptions := options.Find()
 	cursor, err := coll.Find(context.TODO(), filter, findOptions)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	defer cursor.Close(context.TODO())
 
 	for cursor.Next(context.TODO()) {
 		var link models.Link
 		if err := cursor.Decode(&link); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
-
 		var yesterdayClicks uint64
 		n := len(link.Clicks.Daily)
 		if n == 0 {
@@ -275,12 +235,11 @@ func UpdateAll(cl *mongo.Client) {
 
 		_, err = coll.UpdateOne(context.TODO(), bson.M{"_id": link.Id}, update)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	}
 
 	if err := cursor.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
-
 }

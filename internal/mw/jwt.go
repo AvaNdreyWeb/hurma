@@ -2,6 +2,7 @@ package mw
 
 import (
 	"fmt"
+	"hurma/internal/handlers"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
@@ -14,7 +15,11 @@ func JwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cookie, err := c.Cookie("token")
 		if err != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Missing or invalid JWT token")
+			r := handlers.ResponseJSON{
+				Code:    http.StatusUnauthorized,
+				Message: "Missing or invalid JWT token",
+			}
+			return c.JSON(http.StatusUnauthorized, r)
 		}
 		tokenString := cookie.Value
 
@@ -26,7 +31,11 @@ func JwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid JWT token")
+			r := handlers.ResponseJSON{
+				Code:    http.StatusUnauthorized,
+				Message: "Invalid JWT token",
+			}
+			return c.JSON(http.StatusUnauthorized, r)
 		}
 
 		claims := token.Claims.(jwt.MapClaims)
