@@ -9,6 +9,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// @Summary Subscribe to statistics
+// @Description Subscribe to the user's email statistics
+// @Tags Profile
+// @Produce json
+// @Success 200 {object} ResponseJSON
+// @Failure 400 {object} ResponseJSON
+// @Router /subscribe [post]
 func SubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	err := um.Subscribe(authUserEmail, cl)
@@ -28,6 +35,13 @@ func SubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, r)
 }
 
+// @Summary Unubscribe from statistics
+// @Description Unubscribe from the user's email statistics
+// @Tags Profile
+// @Produce json
+// @Success 200 {object} ResponseJSON
+// @Failure 400 {object} ResponseJSON
+// @Router /unsubscribe [post]
 func UnsubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	err := um.Unsubscribe(authUserEmail, cl)
@@ -47,6 +61,13 @@ func UnsubscribeHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, r)
 }
 
+// @Summary Get user info
+// @Description Getting email, tg chat id and subscribtion status
+// @Tags Profile
+// @Produce json
+// @Success 200 {object} models.ProfileUserDTO
+// @Failure 400 {object} ResponseJSON
+// @Router /profile [get]
 func ProfileHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	user, err := um.Get(authUserEmail, cl)

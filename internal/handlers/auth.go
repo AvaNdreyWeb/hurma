@@ -11,6 +11,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// @Summary Login user
+// @Description Login user and getting JWT in response
+// @Tags Auth
+// @Param authUserDTO body models.AuthUserDTO true "Login user data"
+// @Accept json
+// @Produce json
+// @Success 200 {object} tokenDTO
+// @Failure 400 {object} ResponseJSON
+// @Router /login [post]
 func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
@@ -48,10 +57,9 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, access)
 }
 
-// SignUpHandler godoc
 // @Summary Create new user
 // @Description Create new user with email and password
-// @Tags Users
+// @Tags Auth
 // @Param authUserDTO body models.AuthUserDTO true "Create new user data"
 // @Accept json
 // @Produce json

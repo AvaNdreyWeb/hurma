@@ -25,9 +25,9 @@ func allowOrigin(origin string) (bool, error) {
 	return regexp.MatchString(`^*$`, origin)
 }
 
-// @title Echo Swagger Example API
+// @title Hurma API
 // @version 1.0
-// @description This is a sample server server.
+// @description Hurma URL shortener and conversion analysis.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support

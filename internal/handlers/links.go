@@ -6,6 +6,7 @@ import (
 	"hurma/internal/models"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -13,6 +14,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// @Summary Create link
+// @Description Create new short link
+// @Tags Links
+// @Param createLinkDTO body models.CreateLinkDTO true "Create link data"
+// @Accept json
+// @Produce json
+// @Success 200 {object} ResponseJSON
+// @Failure 400 {object} ResponseJSON
+// @Router /create [post]
 func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	l := new(models.CreateLinkDTO)
@@ -58,6 +68,16 @@ func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, r)
 }
 
+// @Summary Edit link
+// @Description Edit link title or expire date
+// @Tags Links
+// @Param editLinkDTO body models.EditLinkDTO true "Edit link data"
+// @Param linkId path string true "Link Id"
+// @Accept json
+// @Produce json
+// @Success 200 {object} ResponseJSON
+// @Failure 400 {object} ResponseJSON
+// @Router /edit/{linkId} [patch]
 func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
@@ -107,6 +127,14 @@ func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, r)
 }
 
+// @Summary Delete link
+// @Description Delete link with linkId
+// @Tags Links
+// @Param linkId path string true "Link Id"
+// @Produce json
+// @Success 200 {object} ResponseJSON
+// @Failure 400 {object} ResponseJSON
+// @Router /delete/{linkId} [delete]
 func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
@@ -135,6 +163,64 @@ func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, r)
 }
 
+// @Summary Get statistics of all links
+// @Description Getting array of clicks by day of all links
+// @Tags Links
+// @Param page query int true "Current page" minimum(1)
+// @Produce json
+// @Success 200 {object} models.UserLinksDTO
+// @Failure 400 {object} ResponseJSON
+// @Router /links [get]
+func UserLinksHandler(c echo.Context, cl *mongo.Client) error {
+	authUserEmail := c.Get("user").(string)
+	queryPage := c.QueryParam("page")
+	page, err := strconv.Atoi(queryPage)
+	if err != nil {
+		page = 1
+	}
+
+	links, err := um.GetLinks(authUserEmail, page, cl)
+	if err != nil {
+		log.Println(err.Error())
+		if err == crud.ErrUserNotFound {
+			r = ResponseJSON{
+				Code:    http.StatusNotFound,
+				Message: "User not found",
+			}
+			return c.JSON(http.StatusNotFound, r)
+		}
+		if err == crud.ErrPageNotFound {
+			r = ResponseJSON{
+				Code:    http.StatusNotFound,
+				Message: "Page not found",
+			}
+			return c.JSON(http.StatusNotFound, r)
+		}
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+
+	user, err := um.Get(authUserEmail, cl)
+	if err != nil {
+		log.Println(err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+
+	data := models.UserLinksDTO{
+		Total: len(user.Links),
+		Data:  links,
+	}
+	return c.JSON(http.StatusOK, data)
+}
+
+// Redirect from short to full url
 func RedirectHandler(c echo.Context, cl *mongo.Client) error {
 	genPart := c.Param("genPart")
 	cfg := config.GetService()

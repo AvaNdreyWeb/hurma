@@ -14,6 +14,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// @Summary Get one link statistics
+// @Description Getting array of clicks by day of one link
+// @Tags Statistics
+// @Param genPart path string true "Short link generated part"
+// @Param period query int true "Days amount" minimum(1)
+// @Produce json
+// @Success 200 {object} []models.DailyDTO
+// @Failure 400 {object} ResponseJSON
+// @Router /statistics/{genPart} [get]
 func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	genPart := c.Param("genPart")
@@ -71,6 +80,14 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 	return c.JSON(http.StatusOK, data)
 }
 
+// @Summary Get statistics of all links
+// @Description Getting array of clicks by day of all links
+// @Tags Statistics
+// @Param period query int true "Days amount" minimum(1)
+// @Produce json
+// @Success 200 {object} []models.DailyDTO
+// @Failure 400 {object} ResponseJSON
+// @Router /statistics [get]
 func AllLinksStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 	authUserEmail := c.Get("user").(string)
 	period := c.QueryParam("period")
