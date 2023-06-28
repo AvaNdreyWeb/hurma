@@ -7,6 +7,11 @@ definitions:
       message:
         type: string
     type: object
+  handlers.tokenDTO:
+    properties:
+      accessToken:
+        type: string
+    type: object
   models.AuthUserDTO:
     properties:
       email:
@@ -14,20 +19,223 @@ definitions:
       password:
         type: string
     type: object
+  models.CreateLinkDTO:
+    properties:
+      createdAt:
+        type: string
+      expiresAt:
+        type: string
+      fullUrl:
+        type: string
+      title:
+        type: string
+    type: object
+  models.DailyDTO:
+    properties:
+      clicks:
+        type: integer
+      date:
+        type: string
+    type: object
+  models.EditLinkDTO:
+    properties:
+      expiresAt:
+        type: string
+      title:
+        type: string
+    type: object
+  models.ProfileUserDTO:
+    properties:
+      chatId:
+        type: string
+      email:
+        type: string
+      subscription:
+        type: boolean
+    type: object
+  models.TableLinkDTO:
+    properties:
+      clicksTotal:
+        type: integer
+      expiresAt:
+        type: string
+      id:
+        type: string
+      shortUrl:
+        type: string
+      title:
+        type: string
+    type: object
+  models.UserLinksDTO:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.TableLinkDTO'
+        type: array
+      total:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
     email: support@swagger.io
     name: API Support
     url: http://www.swagger.io/support
-  description: This is a sample server server.
+  description: Hurma URL shortener and conversion analysis.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Echo Swagger Example API
+  title: Hurma API
   version: "1.0"
 paths:
+  /create:
+    post:
+      consumes:
+      - application/json
+      description: Create new short link
+      parameters:
+      - description: Create link data
+        in: body
+        name: createLinkDTO
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateLinkDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Create link
+      tags:
+      - Links
+  /delete/{linkId}:
+    delete:
+      description: Delete link with linkId
+      parameters:
+      - description: Link Id
+        in: path
+        name: linkId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Delete link
+      tags:
+      - Links
+  /edit/{linkId}:
+    patch:
+      consumes:
+      - application/json
+      description: Edit link title or expire date
+      parameters:
+      - description: Edit link data
+        in: body
+        name: editLinkDTO
+        required: true
+        schema:
+          $ref: '#/definitions/models.EditLinkDTO'
+      - description: Link Id
+        in: path
+        name: linkId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Edit link
+      tags:
+      - Links
+  /links:
+    get:
+      description: Getting array of clicks by day of all links
+      parameters:
+      - description: Current page
+        in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserLinksDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Get statistics of all links
+      tags:
+      - Links
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login user and getting JWT in response
+      parameters:
+      - description: Login user data
+        in: body
+        name: authUserDTO
+        required: true
+        schema:
+          $ref: '#/definitions/models.AuthUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.tokenDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Login user
+      tags:
+      - Auth
+  /profile:
+    get:
+      description: Getting email, tg chat id and subscribtion status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ProfileUserDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Get user info
+      tags:
+      - Profile
   /sign-up:
     post:
       consumes:
@@ -53,7 +261,98 @@ paths:
             $ref: '#/definitions/handlers.ResponseJSON'
       summary: Create new user
       tags:
-      - Users
+      - Auth
+  /statistics:
+    get:
+      description: Getting array of clicks by day of all links
+      parameters:
+      - description: Days amount
+        in: query
+        minimum: 1
+        name: period
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DailyDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Get statistics of all links
+      tags:
+      - Statistics
+  /statistics/{genPart}:
+    get:
+      description: Getting array of clicks by day of one link
+      parameters:
+      - description: Short link generated part
+        in: path
+        name: genPart
+        required: true
+        type: string
+      - description: Days amount
+        in: query
+        minimum: 1
+        name: period
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.DailyDTO'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Get one link statistics
+      tags:
+      - Statistics
+  /subscribe:
+    post:
+      description: Subscribe to the user's email statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Subscribe to statistics
+      tags:
+      - Profile
+  /unsubscribe:
+    post:
+      description: Unubscribe from the user's email statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ResponseJSON'
+      summary: Unubscribe from statistics
+      tags:
+      - Profile
 schemes:
 - http
 swagger: "2.0"
