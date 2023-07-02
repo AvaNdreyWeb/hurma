@@ -13,7 +13,7 @@ var jwtSigningKey = []byte("secret")
 
 func JwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		cookie, err := c.Cookie("token")
+		cookie, err := c.Cookie("hurmaToken")
 		if err != nil {
 			r := handlers.ResponseJSON{
 				Code:    http.StatusUnauthorized,

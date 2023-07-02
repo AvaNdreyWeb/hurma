@@ -52,8 +52,19 @@ func LoginHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	access := tokenDTO{AccessToken: tokenString}
-	return c.JSON(http.StatusOK, access)
+	//access := tokenDTO{AccessToken: tokenString}
+	cookie := &http.Cookie{
+		Name:     "hurmaToken",
+		Value:    tokenString,
+		HttpOnly: true,
+	}
+	c.SetCookie(cookie)
+
+	r = ResponseJSON{
+		Code:    http.StatusOK,
+		Message: "OK",
+	}
+	return c.JSON(http.StatusOK, r)
 }
 
 // @Summary Create new user

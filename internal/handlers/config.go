@@ -12,9 +12,9 @@ type ResponseJSON struct {
 	Message string `json:"message"`
 }
 
-type tokenDTO struct {
-	AccessToken string `json:"accessToken"`
-}
+// type tokenDTO struct {
+// 	AccessToken string `json:"accessToken"`
+// }
 
 var r ResponseJSON
 
