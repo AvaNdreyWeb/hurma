@@ -6,6 +6,7 @@ import (
 	"hurma/internal/models"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
@@ -40,10 +41,9 @@ func LoginHandler(c echo.Context) error {
 		}
 		return c.JSON(http.StatusUnauthorized, r)
 	}
-
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["user"] = u.Email
+	const hours = 1
+	expirationTime := time.Now().Add(hours * time.Hour)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"exp": expirationTime.Unix(), "user": u.Email})
 	tokenString, err := token.SignedString([]byte("secret"))
 	if err != nil {
 		log.Println(err.Error())
@@ -54,11 +54,13 @@ func LoginHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	//access := tokenDTO{AccessToken: tokenString}
 	cookie := &http.Cookie{
 		Name:     "hurmaToken",
 		Value:    tokenString,
 		HttpOnly: true,
+		Path:     "/",
+		SameSite: http.SameSiteNoneMode,
+		Expires:  time.Now().Add(hours * time.Hour),
 	}
 	c.SetCookie(cookie)
 
