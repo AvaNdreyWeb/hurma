@@ -36,7 +36,7 @@ func OneLinkStatisticsHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	cfg := config.Get().Service
+	cfg := config.App.Service
 	addrPart := cfg.Host
 	shortUrl := strings.Join([]string{addrPart, genPart}, "/")
 	link, err := lm.GetByShortUrl(shortUrl, cl)

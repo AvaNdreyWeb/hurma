@@ -45,23 +45,26 @@ type AppClients struct {
 	Redis   *redis.Client
 }
 
-var app *AppConfig
+var App *AppConfig
 var Clients *AppClients
 
 func Init() {
-	app = &AppConfig{
+	App = &AppConfig{
 		MongoDB: setMongoConfig(),
 		Server:  setServerConfig(),
 		Service: setServiceConfig(),
 		Redis:   setRedisConfig(),
 	}
-	mongoClient := app.MongoDB.Client()
-	redisClient := app.Redis.Client()
+
+	log.Println("App Config successfully set", App)
+	mongoClient := App.MongoDB.Client()
+	redisClient := App.Redis.Client()
 
 	Clients = &AppClients{
 		MongoDB: mongoClient,
 		Redis:   redisClient,
 	}
+	log.Println("App Clients successfully set", Clients)
 }
 
 func Close() {
@@ -69,10 +72,6 @@ func Close() {
 	if err := Clients.Redis.Close(); err != nil {
 		log.Println(err.Error())
 	}
-}
-
-func Get() *AppConfig {
-	return app
 }
 
 func setMongoConfig() *MongoConfig {

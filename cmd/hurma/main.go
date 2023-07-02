@@ -5,6 +5,7 @@ import (
 	"hurma/internal/crud"
 	"hurma/internal/handlers"
 	"hurma/internal/mw"
+	"log"
 
 	_ "hurma/docs"
 
@@ -58,7 +59,9 @@ func main() {
 	// Documentation
 	e.GET("/docs*", echoSwagger.WrapHandler)
 
-	cfg := config.Get().Server
+	cfg := config.App.Server
 	addr := cfg.GetAddr()
+
+	log.Println("Server starting on address:", addr)
 	e.Logger.Fatal(e.Start(addr))
 }

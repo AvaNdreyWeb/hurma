@@ -222,7 +222,7 @@ func UserLinksHandler(c echo.Context) error {
 // Redirect from short to full url
 func RedirectHandler(c echo.Context) error {
 	genPart := c.Param("genPart")
-	cfg := config.Get().Service
+	cfg := config.App.Service
 	addrPart := cfg.Host
 	shortUrl := strings.Join([]string{addrPart, genPart}, "/")
 

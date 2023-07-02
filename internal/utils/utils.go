@@ -24,7 +24,7 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func ShortenURL() string {
-	cfg := config.Get().Service
+	cfg := config.App.Service
 	rand.Seed(time.Now().UnixNano())
 
 	gen := make([]string, shortLen)
