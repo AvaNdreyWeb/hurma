@@ -11,7 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // @Summary Get one link statistics
@@ -23,7 +22,7 @@ import (
 // @Success 200 {object} []models.DailyDTO
 // @Failure 400 {object} ResponseJSON
 // @Router /statistics/{genPart} [get]
-func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
+func OneLinkStatisticsHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	genPart := c.Param("genPart")
 	period := c.QueryParam("period")
@@ -37,7 +36,7 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	cfg := config.GetService()
+	cfg := config.Get().Service
 	addrPart := cfg.Host
 	shortUrl := strings.Join([]string{addrPart, genPart}, "/")
 	link, err := lm.GetByShortUrl(shortUrl, cl)
@@ -88,7 +87,7 @@ func OneLinkStatisticsHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} []models.DailyDTO
 // @Failure 400 {object} ResponseJSON
 // @Router /statistics [get]
-func AllLinksStatisticsHandler(c echo.Context, cl *mongo.Client) error {
+func AllLinksStatisticsHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	period := c.QueryParam("period")
 	days, err := strconv.Atoi(period)

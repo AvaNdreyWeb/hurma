@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hurma/internal/config"
 	"hurma/internal/models"
 	"hurma/internal/utils"
 	"log"
@@ -202,7 +203,8 @@ func (lm *LinkManager) GetLinkStatistics(link *models.Link, days int, cl *mongo.
 	return DataList, nil
 }
 
-func UpdateAll(cl *mongo.Client) {
+func UpdateAll() {
+	cl := config.Clients.MongoDB
 	coll := cl.Database("hurma").Collection("links")
 	filter := bson.M{}
 	findOptions := options.Find()

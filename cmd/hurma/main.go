@@ -1,24 +1,20 @@
 package main
 
 import (
-	"context"
 	"hurma/internal/config"
 	"hurma/internal/crud"
 	"hurma/internal/handlers"
 	"hurma/internal/mw"
-	"hurma/internal/storage"
 	"net/http"
 	"regexp"
 
-	"strings"
-
 	_ "hurma/docs"
 
+	"github.com/robfig/cron/v3"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/robfig/cron/v3"
 )
 
 func allowOrigin(origin string) (bool, error) {
@@ -41,16 +37,11 @@ func allowOrigin(origin string) (bool, error) {
 // @BasePath /
 // @schemes http
 func main() {
-	client := storage.ConnectDb()
-	defer client.Disconnect(context.Background())
-
-	cfg := config.GetServer()
-	addr := strings.Join([]string{cfg.Host, cfg.Port}, "")
+	config.Init()
+	defer config.Close()
 
 	cron := cron.New()
-	cron.AddFunc("0 0 0 * * *", func() {
-		crud.UpdateAll(client)
-	})
+	cron.AddFunc("0 0 0 * * *", crud.UpdateAll)
 	cron.Start()
 
 	e := echo.New()
@@ -60,56 +51,26 @@ func main() {
 		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderCookie, echo.HeaderAccessControlAllowCredentials},
 	}))
+	// Auth handlers
+	e.POST("/sign-up", handlers.SignUpHandler)
+	e.POST("/login", handlers.LoginHandler)
+	// Links handlers
+	e.GET("/:genPart", handlers.RedirectHandler)
+	e.GET("/links", handlers.UserLinksHandler, mw.JwtMiddleware)
+	e.POST("/create", handlers.CreateLinkHandler, mw.JwtMiddleware)
+	e.PATCH("/edit/:linkId", handlers.EditLinkHandler, mw.JwtMiddleware)
+	e.DELETE("/delete/:linkId", handlers.DeleteLinkHandler, mw.JwtMiddleware)
+	// Statistics handlers
+	e.GET("/statistics", handlers.AllLinksStatisticsHandler, mw.JwtMiddleware)
+	e.GET("/statistics/:genPart", handlers.OneLinkStatisticsHandler, mw.JwtMiddleware)
+	// Profile handlers
+	e.GET("/profile", handlers.ProfileHandler, mw.JwtMiddleware)
+	e.POST("/subscribe", handlers.SubscribeHandler, mw.JwtMiddleware)
+	e.POST("/unsubscribe", handlers.UnsubscribeHandler, mw.JwtMiddleware)
+	// Documentation
+	e.GET("/docs*", echoSwagger.WrapHandler)
 
-	e.POST("/sign-up", func(c echo.Context) error {
-		return handlers.SignUpHandler(c, client)
-	})
-
-	e.POST("/login", func(c echo.Context) error {
-		return handlers.LoginHandler(c, client)
-	})
-
-	e.POST("/create", func(c echo.Context) error {
-		return handlers.CreateLinkHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.PATCH("/edit/:linkId", func(c echo.Context) error {
-		return handlers.EditLinkHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.DELETE("/delete/:linkId", func(c echo.Context) error {
-		return handlers.DeleteLinkHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.POST("/subscribe", func(c echo.Context) error {
-		return handlers.SubscribeHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.POST("/unsubscribe", func(c echo.Context) error {
-		return handlers.UnsubscribeHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.GET("/:genPart", func(c echo.Context) error {
-		return handlers.RedirectHandler(c, client)
-	})
-
-	e.GET("/statistics", func(c echo.Context) error {
-		return handlers.AllLinksStatisticsHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.GET("/statistics/:genPart", func(c echo.Context) error {
-		return handlers.OneLinkStatisticsHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.GET("/profile", func(c echo.Context) error {
-		return handlers.ProfileHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.GET("/links", func(c echo.Context) error {
-		return handlers.UserLinksHandler(c, client)
-	}, mw.JwtMiddleware)
-
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
-
+	cfg := config.Get().Server
+	addr := cfg.GetAddr()
 	e.Logger.Fatal(e.Start(addr))
 }

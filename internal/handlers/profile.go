@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // @Summary Subscribe to statistics
@@ -16,7 +15,7 @@ import (
 // @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /subscribe [post]
-func SubscribeHandler(c echo.Context, cl *mongo.Client) error {
+func SubscribeHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	err := um.Subscribe(authUserEmail, cl)
 	if err != nil {
@@ -42,7 +41,7 @@ func SubscribeHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /unsubscribe [post]
-func UnsubscribeHandler(c echo.Context, cl *mongo.Client) error {
+func UnsubscribeHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	err := um.Unsubscribe(authUserEmail, cl)
 	if err != nil {
@@ -68,7 +67,7 @@ func UnsubscribeHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} models.ProfileUserDTO
 // @Failure 400 {object} ResponseJSON
 // @Router /profile [get]
-func ProfileHandler(c echo.Context, cl *mongo.Client) error {
+func ProfileHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	user, err := um.Get(authUserEmail, cl)
 	if err != nil {

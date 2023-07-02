@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // @Summary Login user
@@ -20,7 +19,7 @@ import (
 // @Success 200 {object} tokenDTO
 // @Failure 400 {object} ResponseJSON
 // @Router /login [post]
-func LoginHandler(c echo.Context, cl *mongo.Client) error {
+func LoginHandler(c echo.Context) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
 		log.Println(err.Error())
@@ -66,7 +65,7 @@ func LoginHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /sign-up [post]
-func SignUpHandler(c echo.Context, cl *mongo.Client) error {
+func SignUpHandler(c echo.Context) error {
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
 		log.Println(err.Error())

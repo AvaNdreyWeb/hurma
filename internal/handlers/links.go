@@ -11,7 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // @Summary Create link
@@ -23,7 +22,7 @@ import (
 // @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /create [post]
-func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
+func CreateLinkHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	l := new(models.CreateLinkDTO)
 	if err := c.Bind(l); err != nil {
@@ -78,7 +77,7 @@ func CreateLinkHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /edit/{linkId} [patch]
-func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
+func EditLinkHandler(c echo.Context) error {
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
 		log.Println(err.Error())
@@ -135,7 +134,7 @@ func EditLinkHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /delete/{linkId} [delete]
-func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
+func DeleteLinkHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
@@ -171,7 +170,7 @@ func DeleteLinkHandler(c echo.Context, cl *mongo.Client) error {
 // @Success 200 {object} models.UserLinksDTO
 // @Failure 400 {object} ResponseJSON
 // @Router /links [get]
-func UserLinksHandler(c echo.Context, cl *mongo.Client) error {
+func UserLinksHandler(c echo.Context) error {
 	authUserEmail := c.Get("user").(string)
 	queryPage := c.QueryParam("page")
 	page, err := strconv.Atoi(queryPage)
@@ -221,9 +220,9 @@ func UserLinksHandler(c echo.Context, cl *mongo.Client) error {
 }
 
 // Redirect from short to full url
-func RedirectHandler(c echo.Context, cl *mongo.Client) error {
+func RedirectHandler(c echo.Context) error {
 	genPart := c.Param("genPart")
-	cfg := config.GetService()
+	cfg := config.Get().Service
 	addrPart := cfg.Host
 	shortUrl := strings.Join([]string{addrPart, genPart}, "/")
 
