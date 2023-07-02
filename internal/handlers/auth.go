@@ -18,7 +18,7 @@ import (
 // @Param authUserDTO body models.AuthUserDTO true "Login user data"
 // @Accept json
 // @Produce json
-// @Success 200 {object} tokenDTO
+// @Success 200 {object} ResponseJSON
 // @Failure 400 {object} ResponseJSON
 // @Router /login [post]
 func LoginHandler(c echo.Context) error {

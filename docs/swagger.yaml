@@ -7,11 +7,6 @@ definitions:
       message:
         type: string
     type: object
-  handlers.tokenDTO:
-    properties:
-      accessToken:
-        type: string
-    type: object
   models.AuthUserDTO:
     properties:
       email:
@@ -211,7 +206,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.tokenDTO'
+            $ref: '#/definitions/handlers.ResponseJSON'
         "400":
           description: Bad Request
           schema:

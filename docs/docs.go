@@ -211,7 +211,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.tokenDTO"
+                            "$ref": "#/definitions/handlers.ResponseJSON"
                         }
                     },
                     "400": {
@@ -435,14 +435,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "handlers.tokenDTO": {
-            "type": "object",
-            "properties": {
-                "accessToken": {
                     "type": "string"
                 }
             }
