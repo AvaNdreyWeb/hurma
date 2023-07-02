@@ -94,7 +94,7 @@ func (um *UserManager) GetLinks(email string, page int, cl *mongo.Client) ([]mod
 	count := len(user.Links)
 	start := (page - 1) * 10
 	if start >= count {
-		return nil, ErrPageNotFound
+		return []models.TableLinkDTO{}, nil
 	}
 	var end int
 	if start+10 > count {

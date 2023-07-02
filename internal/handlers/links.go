@@ -192,13 +192,13 @@ func UserLinksHandler(c echo.Context) error {
 			}
 			return c.JSON(http.StatusNotFound, r)
 		}
-		if err == crud.ErrPageNotFound {
-			r = ResponseJSON{
-				Code:    http.StatusNotFound,
-				Message: "Page not found",
-			}
-			return c.JSON(http.StatusNotFound, r)
-		}
+		// if err == crud.ErrPageNotFound {
+		// 	r = ResponseJSON{
+		// 		Code:    http.StatusNotFound,
+		// 		Message: "Page not found",
+		// 	}
+		// 	return c.JSON(http.StatusNotFound, r)
+		// }
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
 			Message: "Internal Server Error",
