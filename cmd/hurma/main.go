@@ -13,7 +13,6 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 // @title Hurma API
@@ -43,7 +42,7 @@ func main() {
 	e.Use(mw.CORS)
 	// Auth handlers
 	e.POST("/sign-up", handlers.SignUpHandler)
-	e.POST("/login", handlers.LoginHandler, middleware.HTTPSRedirect())
+	e.POST("/login", handlers.LoginHandler) //, middleware.HTTPSRedirect())
 	// Links handlers
 	e.GET("/:genPart", handlers.RedirectHandler)
 	e.GET("/links", handlers.UserLinksHandler, mw.JwtMiddleware)
