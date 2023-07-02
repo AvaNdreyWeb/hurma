@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
 	"hurma/internal/config"
 	"hurma/internal/crud"
 	"hurma/internal/models"
+	"hurma/internal/utils"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -51,8 +55,8 @@ func CreateLinkHandler(c echo.Context) error {
 		}
 		return c.JSON(http.StatusInternalServerError, r)
 	}
-
-	if err = um.AddLink(authUserEmail, linkId, cl); err != nil {
+	err = um.AddLink(authUserEmail, linkId, cl)
+	if err != nil {
 		log.Println(err.Error())
 		r = ResponseJSON{
 			Code:    http.StatusInternalServerError,
@@ -60,6 +64,17 @@ func CreateLinkHandler(c echo.Context) error {
 		}
 		return c.JSON(http.StatusInternalServerError, r)
 	}
+	user, err := um.Get(authUserEmail, cl)
+	if err != nil {
+		log.Println(err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+	pages := int(math.Ceil(float64(len(user.Links)) / 10))
+	utils.ClearCachedPages(authUserEmail, 1, pages)
 
 	r = ResponseJSON{
 		Code:    http.StatusOK,
@@ -79,6 +94,7 @@ func CreateLinkHandler(c echo.Context) error {
 // @Failure 400 {object} ResponseJSON
 // @Router /edit/{linkId} [patch]
 func EditLinkHandler(c echo.Context) error {
+	authUserEmail := c.Get("user").(string)
 	cl := config.Clients.MongoDB
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
@@ -121,6 +137,25 @@ func EditLinkHandler(c echo.Context) error {
 		}
 	}
 
+	user, err := um.Get(authUserEmail, cl)
+	if err != nil {
+		log.Println(err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+	number := 0
+	for i := 0; i < len(user.Links); i++ {
+		if user.Links[i] == linkId {
+			number = i
+			break
+		}
+	}
+	page := int(math.Ceil(float64(number) / 10))
+	utils.ClearCachedPages(authUserEmail, page, page)
+
 	r = ResponseJSON{
 		Code:    http.StatusOK,
 		Message: "OK",
@@ -157,6 +192,25 @@ func DeleteLinkHandler(c echo.Context) error {
 		}
 		return c.JSON(http.StatusInternalServerError, r)
 	}
+	user, err := um.Get(authUserEmail, cl)
+	if err != nil {
+		log.Println(err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+	number := 0
+	for i := 0; i < len(user.Links); i++ {
+		if user.Links[i] == linkId {
+			number = i
+			break
+		}
+	}
+	page := int(math.Ceil(float64(number) / 10))
+	pages := int(math.Ceil(float64(len(user.Links)) / 10))
+	utils.ClearCachedPages(authUserEmail, page, pages)
 
 	r = ResponseJSON{
 		Code:    http.StatusOK,
@@ -180,6 +234,26 @@ func UserLinksHandler(c echo.Context) error {
 	page, err := strconv.Atoi(queryPage)
 	if err != nil {
 		page = 1
+	}
+
+	q := utils.SearchCache{
+		Email: authUserEmail,
+		Page:  page,
+	}
+	hashKey, err := utils.GetHashKey(q)
+	if err != nil {
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+	val, err := config.Clients.Redis.Get(context.TODO(), hashKey).Result()
+	if err == nil {
+		cache := new(models.UserLinksDTO)
+		json.Unmarshal([]byte(val), cache)
+		log.Panicln("FROM CACHE")
+		return c.JSON(http.StatusOK, cache)
 	}
 
 	links, err := um.GetLinks(authUserEmail, page, cl)
@@ -220,6 +294,26 @@ func UserLinksHandler(c echo.Context) error {
 		Total: len(user.Links),
 		Data:  links,
 	}
+	s, err := utils.Stringify(data)
+	if err != nil {
+		log.Println(err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+	err = config.Clients.Redis.Set(context.TODO(), hashKey, s, 0).Err()
+	if err != nil {
+		log.Println(err.Error())
+		r = ResponseJSON{
+			Code:    http.StatusInternalServerError,
+			Message: "Internal Server Error",
+		}
+		return c.JSON(http.StatusInternalServerError, r)
+	}
+
+	log.Panicln("FROM MONGODB")
 	return c.JSON(http.StatusOK, data)
 }
 

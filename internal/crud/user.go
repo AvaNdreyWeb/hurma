@@ -78,7 +78,7 @@ func (um *UserManager) AddLink(email string, linkId primitive.ObjectID, cl *mong
 	}
 	coll := cl.Database("hurma").Collection("users")
 	filter := bson.D{{Key: "email", Value: email}}
-	update := bson.M{"$push": bson.M{"links": linkId}}
+	update := bson.M{"$push": bson.M{"links": bson.M{"$each": []primitive.ObjectID{linkId}, "$position": 0}}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err
