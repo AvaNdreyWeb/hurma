@@ -4,7 +4,7 @@ Web service for link shortening and conversion analysis
 ## Installation
 
 ```
-docker build -t hurma -f build/Dockerfile .
+docker build --rm --no-cache -t hurma -f build/Dockerfile .
 ```
 
 ```
