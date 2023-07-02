@@ -5,8 +5,6 @@ import (
 	"hurma/internal/crud"
 	"hurma/internal/handlers"
 	"hurma/internal/mw"
-	"net/http"
-	"regexp"
 
 	_ "hurma/docs"
 
@@ -14,12 +12,7 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
-
-func allowOrigin(origin string) (bool, error) {
-	return regexp.MatchString(`^*$`, origin)
-}
 
 // @title Hurma API
 // @version 1.0
@@ -45,12 +38,7 @@ func main() {
 	cron.Start()
 
 	e := echo.New()
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOriginFunc:  allowOrigin,
-		AllowCredentials: true,
-		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderCookie, echo.HeaderAccessControlAllowCredentials},
-	}))
+	e.Use(mw.CORS)
 	// Auth handlers
 	e.POST("/sign-up", handlers.SignUpHandler)
 	e.POST("/login", handlers.LoginHandler)
