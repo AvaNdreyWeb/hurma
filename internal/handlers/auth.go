@@ -61,6 +61,7 @@ func LoginHandler(c echo.Context) error {
 		Path:     "/",
 		Domain:   "localhost",
 		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 		Expires:  time.Now().Add(hours * time.Hour),
 	}
 	c.SetCookie(cookie)
