@@ -23,6 +23,7 @@ import (
 // @Failure 400 {object} ResponseJSON
 // @Router /statistics/{genPart} [get]
 func OneLinkStatisticsHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	authUserEmail := c.Get("user").(string)
 	genPart := c.Param("genPart")
 	period := c.QueryParam("period")
@@ -88,6 +89,7 @@ func OneLinkStatisticsHandler(c echo.Context) error {
 // @Failure 400 {object} ResponseJSON
 // @Router /statistics [get]
 func AllLinksStatisticsHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	authUserEmail := c.Get("user").(string)
 	period := c.QueryParam("period")
 	days, err := strconv.Atoi(period)

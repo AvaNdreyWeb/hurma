@@ -1,10 +1,7 @@
 package handlers
 
 import (
-	"hurma/internal/config"
 	"hurma/internal/crud"
-
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ResponseJSON struct {
@@ -20,5 +17,3 @@ var r ResponseJSON
 
 var um crud.UserManager
 var lm crud.LinkManager
-
-var cl *mongo.Client = config.Clients.MongoDB

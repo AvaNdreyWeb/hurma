@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"hurma/internal/config"
 	"hurma/internal/crud"
 	"hurma/internal/models"
 	"log"
@@ -20,6 +21,7 @@ import (
 // @Failure 400 {object} ResponseJSON
 // @Router /login [post]
 func LoginHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
 		log.Println(err.Error())
@@ -77,6 +79,7 @@ func LoginHandler(c echo.Context) error {
 // @Failure 400 {object} ResponseJSON
 // @Router /sign-up [post]
 func SignUpHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	u := new(models.AuthUserDTO)
 	if err := c.Bind(u); err != nil {
 		log.Println(err.Error())

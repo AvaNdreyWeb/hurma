@@ -23,6 +23,7 @@ import (
 // @Failure 400 {object} ResponseJSON
 // @Router /create [post]
 func CreateLinkHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	authUserEmail := c.Get("user").(string)
 	l := new(models.CreateLinkDTO)
 	if err := c.Bind(l); err != nil {
@@ -78,6 +79,7 @@ func CreateLinkHandler(c echo.Context) error {
 // @Failure 400 {object} ResponseJSON
 // @Router /edit/{linkId} [patch]
 func EditLinkHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
 		log.Println(err.Error())
@@ -135,6 +137,7 @@ func EditLinkHandler(c echo.Context) error {
 // @Failure 400 {object} ResponseJSON
 // @Router /delete/{linkId} [delete]
 func DeleteLinkHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	authUserEmail := c.Get("user").(string)
 	linkId, err := primitive.ObjectIDFromHex(c.Param("linkId"))
 	if err != nil {
@@ -171,6 +174,7 @@ func DeleteLinkHandler(c echo.Context) error {
 // @Failure 400 {object} ResponseJSON
 // @Router /links [get]
 func UserLinksHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	authUserEmail := c.Get("user").(string)
 	queryPage := c.QueryParam("page")
 	page, err := strconv.Atoi(queryPage)
@@ -221,6 +225,7 @@ func UserLinksHandler(c echo.Context) error {
 
 // Redirect from short to full url
 func RedirectHandler(c echo.Context) error {
+	cl := config.Clients.MongoDB
 	genPart := c.Param("genPart")
 	cfg := config.App.Service
 	addrPart := cfg.Host
