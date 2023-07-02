@@ -59,6 +59,7 @@ func LoginHandler(c echo.Context) error {
 		Value:    tokenString,
 		HttpOnly: true,
 		Path:     "/",
+		Domain:   "localhost",
 		SameSite: http.SameSiteNoneMode,
 		Expires:  time.Now().Add(hours * time.Hour),
 	}
