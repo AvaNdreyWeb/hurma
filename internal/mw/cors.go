@@ -15,6 +15,6 @@ func allowOrigin(origin string) (bool, error) {
 var CORS echo.MiddlewareFunc = middleware.CORSWithConfig(middleware.CORSConfig{
 	AllowOriginFunc:  allowOrigin,
 	AllowCredentials: true,
-	AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderCookie, echo.HeaderAccessControlAllowCredentials},
 })
