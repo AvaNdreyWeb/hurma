@@ -46,9 +46,9 @@ func main() {
 	// Links handlers
 	e.GET("/:genPart", handlers.RedirectHandler)
 	e.GET("/links", handlers.UserLinksHandler, mw.JwtMiddleware)
-	e.POST("/create", handlers.CreateLinkHandler, mw.JwtMiddleware)
-	e.PATCH("/edit/:linkId", handlers.EditLinkHandler, mw.JwtMiddleware)
-	e.DELETE("/delete/:linkId", handlers.DeleteLinkHandler, mw.JwtMiddleware)
+	e.POST("/links", handlers.CreateLinkHandler, mw.JwtMiddleware)
+	e.PATCH("/links/:linkId", handlers.EditLinkHandler, mw.JwtMiddleware)
+	e.DELETE("/links/:linkId", handlers.DeleteLinkHandler, mw.JwtMiddleware)
 	// Statistics handlers
 	e.GET("/statistics", handlers.AllLinksStatisticsHandler, mw.JwtMiddleware)
 	e.GET("/statistics/:genPart", handlers.OneLinkStatisticsHandler, mw.JwtMiddleware)
