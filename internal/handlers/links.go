@@ -253,6 +253,7 @@ func UserLinksHandler(c echo.Context) error {
 		cache := new(models.UserLinksDTO)
 		json.Unmarshal([]byte(val), cache)
 		log.Println("FROM CACHE")
+		log.Println("Getting from", hashKey, "...")
 		return c.JSON(http.StatusOK, cache)
 	}
 

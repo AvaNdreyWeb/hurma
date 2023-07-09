@@ -48,6 +48,7 @@ func ClearCachedPages(email string, from, to int) error {
 			return err
 		}
 		config.Clients.Redis.Del(context.TODO(), key)
+		log.Println("cache key:", key, "deleted")
 	}
 	log.Println("$$$ Clear cache ends")
 	return nil
