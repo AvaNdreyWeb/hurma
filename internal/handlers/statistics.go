@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // @Summary Get one link statistics
@@ -50,15 +49,15 @@ func OneLinkStatisticsHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	id, err := primitive.ObjectIDFromHex(link.Id)
-	if err != nil {
-		log.Println(err.Error())
-		r = ResponseJSON{
-			Code:    http.StatusInternalServerError,
-			Message: "Internal Server Error",
-		}
-		return c.JSON(http.StatusInternalServerError, r)
-	}
+	id := link.Id
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	r = ResponseJSON{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: "Internal Server Error",
+	// 	}
+	// 	return c.JSON(http.StatusInternalServerError, r)
+	// }
 	if !um.StatisticsAccess(authUserEmail, id, cl) {
 		r = ResponseJSON{
 			Code:    http.StatusForbidden,

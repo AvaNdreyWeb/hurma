@@ -36,6 +36,7 @@ func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) (primit
 
 	coll := cl.Database("hurma").Collection("links")
 	doc := models.Link{
+		Id:       primitive.NewObjectID(),
 		Title:    l.Title,
 		ShortUrl: shortUrl,
 		FullUrl:  l.FullUrl,
@@ -47,12 +48,12 @@ func (lm *LinkManager) Create(l *models.CreateLinkDTO, cl *mongo.Client) (primit
 			Daily: []uint64{},
 		},
 	}
-	result, err := coll.InsertOne(context.TODO(), doc)
+	_, err := coll.InsertOne(context.TODO(), doc)
 	if err != nil {
 		return primitive.ObjectID{}, err
 	}
-	linkId := result.InsertedID.(primitive.ObjectID)
-	return linkId, nil
+
+	return doc.Id, nil
 }
 
 func (lm *LinkManager) EditTitle(title string, id primitive.ObjectID, cl *mongo.Client) error {

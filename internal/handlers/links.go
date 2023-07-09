@@ -335,15 +335,15 @@ func RedirectHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	id, err := primitive.ObjectIDFromHex(link.Id)
-	if err != nil {
-		log.Println(err.Error())
-		r = ResponseJSON{
-			Code:    http.StatusInternalServerError,
-			Message: "Internal Server Error",
-		}
-		return c.JSON(http.StatusInternalServerError, r)
-	}
+	id := link.Id
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	r = ResponseJSON{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: "Internal Server Error",
+	// 	}
+	// 	return c.JSON(http.StatusInternalServerError, r)
+	// }
 
 	err = lm.IncTotal(id, cl)
 	if err != nil {
