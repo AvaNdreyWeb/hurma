@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"hurma/internal/config"
 	"hurma/internal/models"
+	"log"
 )
 
 type SearchCache struct {
@@ -35,17 +36,19 @@ func Stringify(obj models.UserLinksDTO) (string, error) {
 }
 
 func ClearCachedPages(email string, from, to int) error {
+	log.Println("$$$ Clear cache starts:", "from page -", from, "to page (include) -", to)
 	for i := from; i <= to; i++ {
 		cachedPage := SearchCache{
 			Email: email,
 			Page:  i,
 		}
+		log.Println("cleaning:", email, "page -", i)
 		key, err := GetHashKey(cachedPage)
 		if err != nil {
 			return err
 		}
 		config.Clients.Redis.Del(context.TODO(), key)
 	}
-
+	log.Println("$$$ Clear cache ends")
 	return nil
 }
