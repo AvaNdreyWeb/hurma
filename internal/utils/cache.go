@@ -40,7 +40,7 @@ func ClearCachedPages(email string, from, to int) error {
 	for i := from; i <= to; i++ {
 		cachedPage := SearchCache{
 			Email: email,
-			Page:  i,
+			Page:  i + 1,
 		}
 		log.Println("cleaning:", email, "page -", i)
 		key, err := GetHashKey(cachedPage)
