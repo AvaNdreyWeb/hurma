@@ -153,7 +153,7 @@ func EditLinkHandler(c echo.Context) error {
 			break
 		}
 	}
-	page := int(math.Ceil(float64(number) / 10))
+	page := 1 + int(math.Floor(float64(number)/10))
 	utils.ClearCachedPages(authUserEmail, page, page)
 
 	r = ResponseJSON{
@@ -208,7 +208,7 @@ func DeleteLinkHandler(c echo.Context) error {
 			break
 		}
 	}
-	page := int(math.Ceil(float64(number) / 10))
+	page := 1 + int(math.Floor(float64(number)/10))
 	pages := int(math.Ceil(float64(len(user.Links)) / 10))
 	utils.ClearCachedPages(authUserEmail, page, pages)
 
