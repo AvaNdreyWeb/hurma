@@ -252,7 +252,7 @@ func UserLinksHandler(c echo.Context) error {
 	if err == nil {
 		cache := new(models.UserLinksDTO)
 		json.Unmarshal([]byte(val), cache)
-		log.Panicln("FROM CACHE")
+		log.Println("FROM CACHE")
 		return c.JSON(http.StatusOK, cache)
 	}
 
@@ -313,7 +313,7 @@ func UserLinksHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, r)
 	}
 
-	log.Panicln("FROM MONGODB")
+	log.Println("FROM MONGODB")
 	return c.JSON(http.StatusOK, data)
 }
 
